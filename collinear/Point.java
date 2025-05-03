@@ -105,7 +105,7 @@ public class Point implements Comparable<Point> {
      *
      * @return the Comparator that defines this ordering on points
      */
-    public Comparator<Point> slopeOrder(Point p, Point q) {
+    public Comparator<Point> slopeOrder() {
         /* YOUR CODE HERE */
         class slopeOrderComparator implements Comparator<Point> {
             public int compare(Point p, Point q) {

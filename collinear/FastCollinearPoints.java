@@ -25,37 +25,79 @@ public class FastCollinearPoints {
             }
         }
 
+        // initialize lineSegments array
         lineSegments = new LineSegment[0];
 
-        Point p = points[0];
+        for (int i = 0; i < points.length; i++) {
+            Point p = points[i];
 
-        sort(points, p.slopeOrder());
+            // get a new array of all points except p
+            Point[] otherPoints = new Point[points.length - 1];
+            int opIndex = 0;
+            for (int j = 0; j < points.length; j++) {
+                if (j != i) {
+                    otherPoints[opIndex++] = points[j];
+                }
+            }
 
-        Point[] colPoints = new Point[points.length];
-        int x = 0;
-        colPoints[x++] = p;
+            // sort other points according to the slopes they make with p
+            sort(otherPoints, p.slopeOrder());
 
-        for (int i = 1; i < points.length; i++) {
-            if (p.slopeTo(points[i]) - p.slopeTo(points[i - 1]) < 1e-9) {
-                colPoints[x++] = points[i];
-            } else {
-                if (colPoints.length > 4) {
-                    LineSegment lineSegment = new LineSegment(p, colPoints[colPoints.length - 1]);
-                    LineSegment[] lineSegmentsCopy = new LineSegment[lineSegments.length + 1];
-                    for (int j = 0; j < lineSegmentsCopy.length; j++) {
-                        lineSegmentsCopy[j] = lineSegments[j];
+            // Check if any 3 (or more) adjacent points in the sorted order have equal
+            // slopes with respect to p. If so, these points, together with p, are
+            // collinear.
+
+            int numColPts = 0;
+            for (int k = 1; k < otherPoints.length; k++) {
+                if (p.slopeTo(otherPoints[k]) == p.slopeTo(otherPoints[k - 1])) {
+                    numColPts++;
+                } else {
+                    if (numColPts >= 3) {
+                        // get the collinear points
+                        Point[] colPoints = new Point[numColPts + 1];
+                        int cpIndex = 0;
+                        colPoints[cpIndex++] = p;
+                        for (int m = 0; m < numColPts; m++) {
+                            colPoints[cpIndex++] = points[k - m - 1];
+                        }
+                        // add the col points to line segments array
+                        addLsgToLsgs(colPoints);
                     }
-                    lineSegmentsCopy[lineSegmentsCopy.length - 1] = lineSegment;
-                    lineSegments = lineSegmentsCopy;
+                    numColPts = 0;
                 }
             }
         }
 
     }
 
+    private void addLsgToLsgs(Point[] pts) {
+        int min = 0, max = 0;
+        for (int i = 1; i < pts.length; i++) {
+            if (pts[i].compareTo(pts[min]) < 0) {
+                min = i;
+            }
+            if (pts[i].compareTo(pts[max]) > 0) {
+                max = i;
+            }
+        }
+        LineSegment lsg = new LineSegment(pts[min], pts[max]);
+        int len = lineSegments.length;
+        LineSegment[] copy = getLineSegmentsCopy(len + 1);
+        copy[len] = lsg;
+        lineSegments = copy;
+    }
+
+    private LineSegment[] getLineSegmentsCopy(int capacity) {
+        LineSegment[] copy = new LineSegment[capacity];
+        for (int i = 0; i < lineSegments.length; i++) {
+            copy[i] = lineSegments[i];
+        }
+        return copy;
+    }
+
     private static void sort(Point[] a, Comparator<Point> comparator) {
-        int N = a.length;
-        for (int i = 0; i < N; i++)
+        int n = a.length;
+        for (int i = 0; i < n; i++)
             for (int j = i; j > 0 && less(comparator, a[j], a[j - 1]); j--)
                 exch(a, j, j - 1);
     }
@@ -75,6 +117,7 @@ public class FastCollinearPoints {
     }
 
     public LineSegment[] segments() { // the line segments
-        return lineSegments;
+        LineSegment[] copy = getLineSegmentsCopy(lineSegments.length);
+        return copy;
     }
 }

@@ -62,14 +62,19 @@ public class Point implements Comparable<Point> {
     public double slopeTo(Point that) {
         /* YOUR CODE HERE */
         double slope;
-        if ((this.y - that.y < 1e-9) && (this.x - that.x < 1e-9)) {
+        // the two points are equal
+        if (this.y == that.y && this.x == that.x) {
             slope = Double.NEGATIVE_INFINITY;
-        } else if (this.y - that.y < 1e-9) {
+        }
+        // line segment connecting the two points is horizontal
+        else if (this.y == that.y) {
             slope = 0;
-        } else if (this.x - that.x < 1e-9) {
+        }
+        // line segment connecting the two points is vertical
+        else if (this.x == that.x) {
             slope = Double.POSITIVE_INFINITY;
         } else {
-            slope = (that.y - this.y) / (that.x - this.x);
+            slope = (double) (that.y - this.y) / (double) (that.x - this.x);
         }
         return slope;
     }
@@ -89,9 +94,9 @@ public class Point implements Comparable<Point> {
     public int compareTo(Point that) {
         /* YOUR CODE HERE */
         int result;
-        if ((this.x - that.x < 1e-9) && (this.y - that.y < 1e-9)) {
+        if (this.x == that.x && this.y == that.y) {
             result = 0;
-        } else if ((this.y < that.y) || ((this.y - that.y < 1e-9) && (this.x < that.x))) {
+        } else if ((this.y < that.y) || (this.y == that.y && this.x < that.x)) {
             result = -1;
         } else {
             result = 1;
@@ -107,9 +112,11 @@ public class Point implements Comparable<Point> {
      */
     public Comparator<Point> slopeOrder() {
         /* YOUR CODE HERE */
-        class slopeOrderComparator implements Comparator<Point> {
+        class SlopeOrderComparator implements Comparator<Point> {
+
             public int compare(Point p, Point q) {
                 int result;
+
                 if (slopeTo(p) < slopeTo(q)) {
                     result = -1;
                 } else if (slopeTo(p) > slopeTo(q)) {
@@ -117,10 +124,12 @@ public class Point implements Comparable<Point> {
                 } else {
                     result = 0;
                 }
+
                 return result;
             }
         }
-        return new slopeOrderComparator();
+
+        return new SlopeOrderComparator();
     }
 
     /**

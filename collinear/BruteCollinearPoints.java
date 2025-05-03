@@ -23,24 +23,44 @@ public class BruteCollinearPoints {
             }
         }
 
+        // initialize lineSegments array
+        lineSegments = new LineSegment[0];
+
         for (int i = 0; i < points.length; i++) {
             for (int j = 0; j < points.length; j++) {
                 for (int k = 0; k < points.length; k++) {
-                    for (int l = 0; l < points.length; l++) {
+                    for (int m = 0; m < points.length; m++) {
 
                         Point p = points[i];
                         Point q = points[j];
                         Point r = points[k];
-                        Point s = points[l];
+                        Point s = points[m];
 
-                        if ((p.slopeTo(q) - p.slopeTo(r) < 1e-9) && (p.slopeTo(q) - p.slopeTo(s)) < 1e-9) {
-                            LineSegment lineSegment = new LineSegment(p, s);
-                            lineSegments = new LineSegment[1];
-                            lineSegments[0] = lineSegment;
-                        } else {
-                            lineSegments = new LineSegment[0];
+                        // check if slope between p and q, p and r, and p and s is equal
+                        if ((p.slopeTo(q) == p.slopeTo(r)) && (p.slopeTo(q) == p.slopeTo(s))) {
+                            boolean c1 = p.compareTo(q) < 0 && p.compareTo(r) < 0 && p.compareTo(s) < 0;
+                            boolean c2 = q.compareTo(p) > 0 && q.compareTo(r) < 0 && q.compareTo(s) < 0;
+                            boolean c3 = r.compareTo(p) > 0 && r.compareTo(q) > 0 && r.compareTo(s) < 0;
+                            boolean c4 = s.compareTo(p) > 0 && s.compareTo(q) > 0 && s.compareTo(r) > 0;
+
+                            // check if p, q, r, s are in order
+                            if (c1 && c2 && c3 && c4) {
+
+                                // construct a new line segment from p to (q,r,s)
+                                LineSegment lsg = new LineSegment(p, s);
+
+                                int len = lineSegments.length;
+
+                                // create a copy of lineSegments with length = lineSegments.length + 1
+                                LineSegment[] copy = getLineSegmentsCopy(len + 1);
+
+                                // add lineSegment to copy
+                                copy[len] = lsg;
+
+                                // point lineSegments to copy
+                                lineSegments = copy;
+                            }
                         }
-
                     }
                 }
             }
@@ -48,11 +68,20 @@ public class BruteCollinearPoints {
 
     }
 
+    private LineSegment[] getLineSegmentsCopy(int capacity) {
+        LineSegment[] copy = new LineSegment[capacity];
+        for (int i = 0; i < lineSegments.length; i++) {
+            copy[i] = lineSegments[i];
+        }
+        return copy;
+    }
+
     public int numberOfSegments() { // the number of line segments
         return lineSegments.length;
     }
 
     public LineSegment[] segments() { // the line segments
-        return lineSegments;
+        LineSegment[] copy = getLineSegmentsCopy(lineSegments.length);
+        return copy;
     }
 }

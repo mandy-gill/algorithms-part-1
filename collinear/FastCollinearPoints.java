@@ -11,15 +11,19 @@ public class FastCollinearPoints {
             throw new IllegalArgumentException();
         }
 
+        // Throw exception if an entry in the array argument is null
         for (int i = 0; i < points.length; i++) {
-            // Throw exception if an entry in the arrray argument is null
+
             if (points[i] == null) {
                 throw new IllegalArgumentException();
             }
+        }
 
+        // Throw exception if two entries in the array are equal
+        for (int i = 0; i < points.length; i++) {
             for (int j = 0; j < points.length; j++) {
-                // Throw exception if two entries in the array are equal
-                if (j != i && points[j] == points[i]) {
+
+                if (j != i && points[j].compareTo(points[i]) == 0) {
                     throw new IllegalArgumentException();
                 }
             }

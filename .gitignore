@@ -1,0 +1,26 @@
+# Compiled class files
+*.class
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Files used for testing purposes
+*.txt
+
+# VS Code settings
+.vscode/
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Build directories
+out/
+bin/
+target/
+
+# OS-specific junk
+.DS_Store
+Thumbs.db

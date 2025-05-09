@@ -46,6 +46,8 @@ public class BruteCollinearPoints {
 
                             // check if slope between p and q, p and r, and p and s is equal
                             if ((safeEquals(p.slopeTo(q), p.slopeTo(r))) && (safeEquals(p.slopeTo(q), p.slopeTo(s)))) {
+
+                                // check if p, q, r, s are in order
                                 boolean c1 = p.compareTo(q) < 0 && p.compareTo(r) < 0 && p.compareTo(s) < 0;
                                 boolean c2 = q.compareTo(p) > 0 && q.compareTo(r) < 0 && q.compareTo(s) < 0;
                                 boolean c3 = r.compareTo(p) > 0 && r.compareTo(q) > 0 && r.compareTo(s) < 0;
@@ -75,26 +77,6 @@ public class BruteCollinearPoints {
             }
         }
 
-    }
-
-    private Point getSmallest(Point[] arr) {
-        int min = 0;
-        for (int i = 1; i < arr.length; i++) {
-            if (arr[i].compareTo(arr[min]) < 0) {
-                min = i;
-            }
-        }
-        return arr[min];
-    }
-
-    private Point getLargest(Point[] arr) {
-        int min = 0;
-        for (int i = 1; i < arr.length; i++) {
-            if (arr[i].compareTo(arr[min]) > 0) {
-                min = i;
-            }
-        }
-        return arr[min];
     }
 
     private static boolean safeEquals(double a, double b) {

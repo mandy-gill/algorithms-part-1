@@ -1,3 +1,7 @@
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
+
 public class BruteCollinearPoints {
 
     private LineSegment[] lineSegments;
@@ -11,7 +15,6 @@ public class BruteCollinearPoints {
 
         // Throw exception if an entry in the array argument is null
         for (int i = 0; i < points.length; i++) {
-
             if (points[i] == null) {
                 throw new IllegalArgumentException();
             }
@@ -20,7 +23,6 @@ public class BruteCollinearPoints {
         // Throw exception if two entries in the array are equal
         for (int i = 0; i < points.length; i++) {
             for (int j = 0; j < points.length; j++) {
-
                 if (j != i && points[j].compareTo(points[i]) == 0) {
                     throw new IllegalArgumentException();
                 }
@@ -43,7 +45,7 @@ public class BruteCollinearPoints {
                             Point s = points[m];
 
                             // check if slope between p and q, p and r, and p and s is equal
-                            if ((p.slopeTo(q) == p.slopeTo(r)) && (p.slopeTo(q) == p.slopeTo(s))) {
+                            if ((safeEquals(p.slopeTo(q), p.slopeTo(r))) && (safeEquals(p.slopeTo(q), p.slopeTo(s)))) {
                                 boolean c1 = p.compareTo(q) < 0 && p.compareTo(r) < 0 && p.compareTo(s) < 0;
                                 boolean c2 = q.compareTo(p) > 0 && q.compareTo(r) < 0 && q.compareTo(s) < 0;
                                 boolean c3 = r.compareTo(p) > 0 && r.compareTo(q) > 0 && r.compareTo(s) < 0;
@@ -75,6 +77,35 @@ public class BruteCollinearPoints {
 
     }
 
+    private Point getSmallest(Point[] arr) {
+        int min = 0;
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i].compareTo(arr[min]) < 0) {
+                min = i;
+            }
+        }
+        return arr[min];
+    }
+
+    private Point getLargest(Point[] arr) {
+        int min = 0;
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i].compareTo(arr[min]) > 0) {
+                min = i;
+            }
+        }
+        return arr[min];
+    }
+
+    private static boolean safeEquals(double a, double b) {
+        // Handles infinities and exact matches
+        if (a == b) {
+            return true;
+        }
+        // Handles rounding errors
+        return Math.abs(a - b) < 1e-9;
+    }
+
     private LineSegment[] getLineSegmentsCopy(int capacity) {
         LineSegment[] copy = new LineSegment[capacity];
         for (int i = 0; i < lineSegments.length; i++) {
@@ -91,4 +122,35 @@ public class BruteCollinearPoints {
         LineSegment[] copy = getLineSegmentsCopy(lineSegments.length);
         return copy;
     }
+
+    public static void main(String[] args) {
+
+        // read the n points from a file
+        In in = new In(args[0]);
+        int n = in.readInt();
+        Point[] points = new Point[n];
+        for (int i = 0; i < n; i++) {
+            int x = in.readInt();
+            int y = in.readInt();
+            points[i] = new Point(x, y);
+        }
+
+        // draw the points
+        StdDraw.enableDoubleBuffering();
+        StdDraw.setXscale(0, 32768);
+        StdDraw.setYscale(0, 32768);
+        for (Point p : points) {
+            p.draw();
+        }
+        StdDraw.show();
+
+        // print and draw the line segments
+        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        for (LineSegment segment : collinear.segments()) {
+            StdOut.println(segment);
+            segment.draw();
+        }
+        StdDraw.show();
+    }
+
 }

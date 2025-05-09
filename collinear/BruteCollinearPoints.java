@@ -32,51 +32,48 @@ public class BruteCollinearPoints {
         // initialize lineSegments array
         lineSegments = new LineSegment[0];
 
-        for (int i = 0; i < points.length; i++) {
-            for (int j = 0; j < points.length; j++) {
-                for (int k = 0; k < points.length; k++) {
-                    for (int m = 0; m < points.length; m++) {
+        for (int i = 0; i < points.length - 3; i++) {
+            for (int j = i + 1; j < points.length - 2; j++) {
+                for (int k = j + 1; k < points.length - 1; k++) {
+                    for (int m = k + 1; m < points.length; m++) {
 
-                        // make sure all four points are distinct
-                        if (j != i && (k != j && k != i) && (m != k && m != j && m != i)) {
-                            Point p = points[i];
-                            Point q = points[j];
-                            Point r = points[k];
-                            Point s = points[m];
+                        Point p = points[i];
+                        Point q = points[j];
+                        Point r = points[k];
+                        Point s = points[m];
 
-                            // check if slope between p and q, p and r, and p and s is equal
-                            if ((safeEquals(p.slopeTo(q), p.slopeTo(r))) && (safeEquals(p.slopeTo(q), p.slopeTo(s)))) {
+                        // check if points are collinear
+                        if ((safeEquals(p.slopeTo(q), p.slopeTo(r))) && (safeEquals(p.slopeTo(q), p.slopeTo(s)))) {
 
-                                // check if p, q, r, s are in order
-                                boolean c1 = p.compareTo(q) < 0 && p.compareTo(r) < 0 && p.compareTo(s) < 0;
-                                boolean c2 = q.compareTo(p) > 0 && q.compareTo(r) < 0 && q.compareTo(s) < 0;
-                                boolean c3 = r.compareTo(p) > 0 && r.compareTo(q) > 0 && r.compareTo(s) < 0;
-                                boolean c4 = s.compareTo(p) > 0 && s.compareTo(q) > 0 && s.compareTo(r) > 0;
-
-                                // check if p, q, r, s are in order
-                                if (c1 && c2 && c3 && c4) {
-
-                                    // construct a new line segment from p to (q,r,s)
-                                    LineSegment lsg = new LineSegment(p, s);
-
-                                    int len = lineSegments.length;
-
-                                    // create a copy of lineSegments with length = lineSegments.length + 1
-                                    LineSegment[] copy = getLineSegmentsCopy(len + 1);
-
-                                    // add lineSegment to copy
-                                    copy[len] = lsg;
-
-                                    // point lineSegments to copy
-                                    lineSegments = copy;
+                            int min = 0, max = 0;
+                            Point[] pts = { p, q, r, s };
+                            for (int n = 0; n < pts.length; n++) {
+                                if (pts[n].compareTo(pts[min]) < 0) {
+                                    min = n;
+                                }
+                                if (pts[n].compareTo(pts[max]) > 0) {
+                                    max = n;
                                 }
                             }
+
+                            // construct a new line segment from p to (q,r,s)
+                            LineSegment lsg = new LineSegment(pts[min], pts[max]);
+
+                            int len = lineSegments.length;
+
+                            // create a copy of lineSegments with length = lineSegments.length + 1
+                            LineSegment[] copy = getLineSegmentsCopy(len + 1);
+
+                            // add lineSegment to copy
+                            copy[len] = lsg;
+
+                            // point lineSegments to copy
+                            lineSegments = copy;
                         }
                     }
                 }
             }
         }
-
     }
 
     private static boolean safeEquals(double a, double b) {

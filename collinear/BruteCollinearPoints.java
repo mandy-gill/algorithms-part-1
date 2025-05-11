@@ -4,6 +4,8 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class BruteCollinearPoints {
 
+    private static final double EPSILON = 1e-9;
+
     private LineSegment[] lineSegments;
 
     public BruteCollinearPoints(Point[] points) { // finds all line segments containing 4 points
@@ -32,32 +34,34 @@ public class BruteCollinearPoints {
         // initialize lineSegments array
         lineSegments = new LineSegment[0];
 
-        for (int i = 0; i < points.length - 3; i++) {
-            for (int j = i + 1; j < points.length - 2; j++) {
-                for (int k = j + 1; k < points.length - 1; k++) {
-                    for (int m = k + 1; m < points.length; m++) {
+        // create a copy of points
+        Point[] pointsCopy = new Point[points.length];
+        for (int i = 0; i < points.length; i++) {
+            pointsCopy[i] = points[i];
+        }
 
-                        Point p = points[i];
-                        Point q = points[j];
-                        Point r = points[k];
-                        Point s = points[m];
+        // sort the copy of points
+        for (int i = 0; i < pointsCopy.length; i++) {
+            for (int j = i; j > 0 && pointsCopy[j].compareTo(pointsCopy[j - 1]) < 0; j--) {
+                exch(pointsCopy, j, j - 1);
+            }
+        }
+
+        for (int i = 0; i < pointsCopy.length - 3; i++) {
+            for (int j = i + 1; j < pointsCopy.length - 2; j++) {
+                for (int k = j + 1; k < pointsCopy.length - 1; k++) {
+                    for (int m = k + 1; m < pointsCopy.length; m++) {
+
+                        Point p = pointsCopy[i];
+                        Point q = pointsCopy[j];
+                        Point r = pointsCopy[k];
+                        Point s = pointsCopy[m];
 
                         // check if points are collinear
                         if ((safeEquals(p.slopeTo(q), p.slopeTo(r))) && (safeEquals(p.slopeTo(q), p.slopeTo(s)))) {
 
-                            int min = 0, max = 0;
-                            Point[] pts = { p, q, r, s };
-                            for (int n = 0; n < pts.length; n++) {
-                                if (pts[n].compareTo(pts[min]) < 0) {
-                                    min = n;
-                                }
-                                if (pts[n].compareTo(pts[max]) > 0) {
-                                    max = n;
-                                }
-                            }
-
                             // construct a new line segment from p to (q,r,s)
-                            LineSegment lsg = new LineSegment(pts[min], pts[max]);
+                            LineSegment lsg = new LineSegment(p, s);
 
                             int len = lineSegments.length;
 
@@ -76,13 +80,19 @@ public class BruteCollinearPoints {
         }
     }
 
+    private static void exch(Point[] a, int i, int j) {
+        Point swap = a[i];
+        a[i] = a[j];
+        a[j] = swap;
+    }
+
     private static boolean safeEquals(double a, double b) {
         // Handles infinities and exact matches
         if (a == b) {
             return true;
         }
         // Handles rounding errors
-        return Math.abs(a - b) < 1e-9;
+        return Math.abs(a - b) < EPSILON;
     }
 
     private LineSegment[] getLineSegmentsCopy(int capacity) {

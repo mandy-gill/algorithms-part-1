@@ -6,6 +6,8 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class FastCollinearPoints {
 
+    private static final double EPSILON = 1e-9;
+
     private LineSegment[] lineSegments;
 
     public FastCollinearPoints(Point[] points) { // finds all line segments containing 4 or more points
@@ -33,23 +35,20 @@ public class FastCollinearPoints {
             }
         }
 
+        // get a copy of points array
+        Point[] otherPoints = new Point[points.length];
+        for (int i = 0; i < points.length; i++) {
+            otherPoints[i] = points[i];
+        }
+
         // initialize lineSegments array
         lineSegments = new LineSegment[0];
 
-        for (int i = 0; i < points.length; i++) {
+        for (int i = 0; i < points.length; i++) { // N
             Point p = points[i];
 
-            // get a new array of all points except p
-            Point[] otherPoints = new Point[points.length - 1];
-            int opIndex = 0;
-            for (int j = 0; j < points.length; j++) {
-                if (j != i) {
-                    otherPoints[opIndex++] = points[j];
-                }
-            }
-
             // sort other points according to the slopes they make with p
-            sort(otherPoints, p.slopeOrder());
+            sort(otherPoints, p.slopeOrder()); // N LOG N
 
             // Check if any 3 (or more) adjacent points in the sorted order have equal
             // slopes with respect to p. If so, these points, together with p, are
@@ -69,9 +68,7 @@ public class FastCollinearPoints {
                             colPoints[cpIndex++] = otherPoints[k - m - 1];
                         }
                         // add the col points to line segments array if p is smallest point
-                        if (isPSmallest(colPoints, p)) {
-                            addLsgToLsgs(colPoints);
-                        }
+                        addLsgToLsgs(colPoints, p);
                     }
                     numColPts = 1;
                 }
@@ -87,21 +84,10 @@ public class FastCollinearPoints {
                     colPoints[cpIndex++] = otherPoints[(otherPoints.length - 1) - m];
                 }
                 // add the col points to line segments array if p is smallest point
-                if (isPSmallest(colPoints, p)) {
-                    addLsgToLsgs(colPoints);
-                }
+                addLsgToLsgs(colPoints, p);
             }
         }
 
-    }
-
-    private boolean isPSmallest(Point[] pts, Point p) {
-        for (int i = 0; i < pts.length; i++) {
-            if (p.compareTo(pts[i]) > 0) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static boolean safeEquals(double a, double b) {
@@ -110,10 +96,10 @@ public class FastCollinearPoints {
             return true;
         }
         // Handles rounding errors
-        return Math.abs(a - b) < 1e-9;
+        return Math.abs(a - b) < EPSILON;
     }
 
-    private void addLsgToLsgs(Point[] pts) {
+    private void addLsgToLsgs(Point[] pts, Point p) {
         // find min and max
         int min = 0, max = 0;
         for (int i = 0; i < pts.length; i++) {
@@ -124,11 +110,13 @@ public class FastCollinearPoints {
                 max = i;
             }
         }
-        LineSegment lsg = new LineSegment(pts[min], pts[max]);
-        int len = lineSegments.length;
-        LineSegment[] copy = getLineSegmentsCopy(len + 1);
-        copy[len] = lsg;
-        lineSegments = copy;
+        if (p == pts[min]) {
+            LineSegment lsg = new LineSegment(pts[min], pts[max]);
+            int len = lineSegments.length;
+            LineSegment[] copy = getLineSegmentsCopy(len + 1);
+            copy[len] = lsg;
+            lineSegments = copy;
+        }
     }
 
     private LineSegment[] getLineSegmentsCopy(int capacity) {
@@ -139,11 +127,37 @@ public class FastCollinearPoints {
         return copy;
     }
 
-    private static void sort(Point[] a, Comparator<Point> comparator) {
-        int n = a.length;
-        for (int i = 0; i < n; i++)
-            for (int j = i; j > 0 && less(comparator, a[j], a[j - 1]); j--)
-                exch(a, j, j - 1);
+    private static void sort(Point[] a, Comparator<Point> c) {
+        Point[] aux = new Point[a.length];
+        sort(a, aux, 0, a.length - 1, c);
+    }
+
+    private static void sort(Point[] a, Point[] aux, int lo, int hi, Comparator<Point> c) {
+        if (hi <= lo) {
+            return;
+        }
+        int mid = lo + (hi - lo) / 2;
+        sort(a, aux, lo, mid, c);
+        sort(a, aux, mid + 1, hi, c);
+        merge(a, aux, lo, mid, hi, c);
+    }
+
+    private static void merge(Point[] a, Point[] aux, int lo, int mid, int hi, Comparator<Point> c) {
+        for (int k = lo; k <= hi; k++) {
+            aux[k] = a[k];
+        }
+        int i = lo, j = mid + 1;
+        for (int k = lo; k <= hi; k++) {
+            if (i > mid) {
+                a[k] = aux[j++];
+            } else if (j > hi) {
+                a[k] = aux[i++];
+            } else if (less(c, aux[j], aux[i])) {
+                a[k] = aux[j++];
+            } else {
+                a[k] = aux[i++];
+            }
+        }
     }
 
     private static boolean less(Comparator<Point> c, Point v, Point w) {

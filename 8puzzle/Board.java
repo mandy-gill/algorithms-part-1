@@ -119,7 +119,6 @@ public class Board {
     }
 
     // all neighboring boards
-    // HOW TO IMPLEMENT STACK FOR THIS???
     public Iterable<Board> neighbors() {
         Stack<Board> stack = new Stack<Board>();
         int row = 0, col = 0;

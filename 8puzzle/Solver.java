@@ -5,7 +5,6 @@ import edu.princeton.cs.algs4.Stack;
 
 public class Solver {
 
-    private MinPQ<SearchNode> pq;
     private SearchNode initialSN;
 
     // find a solution to the initial board (using the A* algorithm)
@@ -13,10 +12,7 @@ public class Solver {
         if (initial == null) {
             throw new IllegalArgumentException();
         }
-        pq = new MinPQ<>();
-        SearchNode sn = new SearchNode(initial, 0, null);
-        this.initialSN = sn;
-        pq.insert(sn);
+        this.initialSN = new SearchNode(initial, 0, null);
     }
 
     // is the initial board solvable? (see below)
@@ -32,11 +28,13 @@ public class Solver {
         if (!isSolvable()) {
             return -1;
         }
-        return initialSN.hp;
+        return initialSN.manhattan;
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
+        MinPQ<SearchNode> pq = new MinPQ<>();
+        pq.insert(initialSN);
         Stack<Board> boards = new Stack<>();
         while (!pq.isEmpty()) {
             SearchNode sn = pq.delMin();
@@ -61,19 +59,19 @@ public class Solver {
         Board board;
         int numMoves;
         SearchNode prev;
-        int hp;
+        int manhattan;
 
         public SearchNode(Board board, int numMoves, SearchNode prev) {
             this.board = board;
             this.numMoves = numMoves;
             this.prev = prev;
-            this.hp = board.hamming() + numMoves;
+            this.manhattan = board.manhattan() + numMoves;
         }
 
         public int compareTo(SearchNode sn) {
-            if (this.hp < sn.hp) {
+            if (this.manhattan < sn.manhattan) {
                 return -1;
-            } else if (this.hp > sn.hp) {
+            } else if (this.manhattan > sn.manhattan) {
                 return 1;
             } else {
                 return 0;

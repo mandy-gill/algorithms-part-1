@@ -9,6 +9,7 @@ public class Board {
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         n = tiles.length;
+        this.tiles = tiles;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 this.tiles[i][j] = tiles[i][j];
@@ -18,17 +19,15 @@ public class Board {
 
     // string representation of this board
     public String toString() {
-        String toReturn = "" + n + "\n";
+        StringBuilder s = new StringBuilder();
+        s.append(n + "\n");
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                toReturn += this.tiles[i][j];
-                if (j != n - 1) {
-                    toReturn += " ";
-                }
+                s.append(String.format("%2d ", tiles[i][j]));
             }
-            toReturn += "\n";
+            s.append("\n");
         }
-        return toReturn;
+        return s.toString();
     }
 
     // board dimension n
@@ -95,9 +94,6 @@ public class Board {
     // Two boards are equal if they are have the same size and their corresponding
     // tiles are in the same positions
     public boolean equals(Object y) {
-        if (this == y) {
-            return true;
-        }
         if (y == null) {
             return false;
         }

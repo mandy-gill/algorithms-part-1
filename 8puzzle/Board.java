@@ -9,7 +9,7 @@ public class Board {
     // where tiles[row][col] = tile at (row, col)
     public Board(int[][] tiles) {
         n = tiles.length;
-        this.tiles = tiles;
+        this.tiles = new int[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 this.tiles[i][j] = tiles[i][j];
@@ -40,12 +40,12 @@ public class Board {
         int hdist = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (i != n - 1 && j != n - 1) {
-                    if (tiles[i][j] != ((i * n) + j + 1)) {
-                        hdist++;
-                    }
-                } else {
-                    if (tiles[i][j] != 0) {
+                int x = tiles[i][j];
+                if (x != 0) {
+                    x = x - 1;
+                    int row = x / n;
+                    int col = x - (x / n) * n;
+                    if (i != row || j != col) {
                         hdist++;
                     }
                 }
@@ -61,11 +61,10 @@ public class Board {
             for (int j = 0; j < n; j++) {
                 int x = tiles[i][j];
                 if (x != 0) {
+                    x = x - 1;
                     int gi = x / n;
                     int gj = x - (x / n) * n;
                     mdist += Math.abs(gi - i) + Math.abs(gj - j);
-                } else {
-                    mdist += Math.abs((n - 1) - i) + Math.abs((n - 1) - j);
                 }
             }
         }
@@ -76,7 +75,7 @@ public class Board {
     public boolean isGoal() {
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (i != n - 1 && j != n - 1) {
+                if (i != n - 1 || j != n - 1) {
                     if (tiles[i][j] != ((i * n) + j + 1)) {
                         return false;
                     }
@@ -94,13 +93,19 @@ public class Board {
     // Two boards are equal if they are have the same size and their corresponding
     // tiles are in the same positions
     public boolean equals(Object y) {
+        if (this == y) {
+            return true;
+        }
+
         if (y == null) {
             return false;
         }
         if (y.getClass() != this.getClass()) {
             return false;
         }
+
         Board that = (Board) y;
+
         if (n != that.dimension()) {
             return false;
         }
@@ -117,8 +122,9 @@ public class Board {
     // all neighboring boards
     public Iterable<Board> neighbors() {
         Stack<Board> stack = new Stack<Board>();
-        int row = 0, col = 0;
+
         // get row and col indices of 0
+        int row = 0, col = 0;
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (tiles[i][j] == 0) {
@@ -137,7 +143,7 @@ public class Board {
             stack.push(nb);
         }
         // add right neighbour
-        if (row + 1 <= n) {
+        if (row + 1 <= n - 1) {
             Board nb = new Board(tiles);
             int temp = nb.tiles[row + 1][col];
             nb.tiles[row + 1][col] = 0;
@@ -145,7 +151,7 @@ public class Board {
             stack.push(nb);
         }
         // add bottom neighbour
-        if (col + 1 <= n) {
+        if (col + 1 <= n - 1) {
             Board nb = new Board(tiles);
             int temp = nb.tiles[row][col + 1];
             nb.tiles[row][col + 1] = 0;

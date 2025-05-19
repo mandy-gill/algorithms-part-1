@@ -15,11 +15,11 @@ public class Solver {
             throw new IllegalArgumentException();
         }
         initialSN = new SearchNode(initial, 0, null);
-        isSolvable();
-    }
 
-    // is the initial board solvable? (see below)
-    public boolean isSolvable() {
+        // solve the board using the A* algorithm
+        solutionBoards = null;
+        minMoves = -1;
+
         SearchNode twinSN = new SearchNode(initialSN.board.twin(), 0, null);
 
         MinPQ<SearchNode> initialPQ = new MinPQ<>();
@@ -54,7 +54,7 @@ public class Solver {
                 }
                 solutionBoards = boards;
                 minMoves = solutionBoards.size() - 1;
-                return true;
+                break;
             }
 
             if (!snTwin.board.isGoal()) {
@@ -71,30 +71,26 @@ public class Solver {
                     }
                 }
             } else {
-                solutionBoards = null;
-                minMoves = -1;
-                return false;
+                break;
             }
         }
+    }
 
-        solutionBoards = null;
-        minMoves = -1;
-        return false;
+    // is the initial board solvable? (see below)
+    public boolean isSolvable() {
+        if (solutionBoards == null) {
+            return false;
+        }
+        return true;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        // if (!isSolvable()) {
-        // return -1;
-        // }
         return minMoves;
     }
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        // if (!isSolvable()) {
-        // return null;
-        // }
         return solutionBoards;
     }
 

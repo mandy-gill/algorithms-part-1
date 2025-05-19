@@ -64,10 +64,10 @@ public class Solver {
                     Board b = iter.next();
                     if (snTwin.prev != null) {
                         if (!b.equals(snTwin.prev.board)) {
-                            twinPQ.insert(new SearchNode(b, snTwin.numMoves + 1, snInitial));
+                            twinPQ.insert(new SearchNode(b, snTwin.numMoves + 1, snTwin));
                         }
                     } else {
-                        twinPQ.insert(new SearchNode(b, snTwin.numMoves + 1, snInitial));
+                        twinPQ.insert(new SearchNode(b, snTwin.numMoves + 1, snTwin));
                     }
                 }
             } else {

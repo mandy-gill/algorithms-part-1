@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdIn;
 
 public class KdTree {
 
@@ -46,6 +47,10 @@ public class KdTree {
             return new Node(p, rect, 1);
         }
 
+        if (p.equals(x.p)) {
+            return x;
+        }
+
         int cmp;
         if (level % 2 == 0) {
             cmp = Double.compare(p.x(), x.p.x());
@@ -62,7 +67,7 @@ public class KdTree {
                 rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y());
             }
             x.lb = insert(x.lb, rect, p, level + 1);
-        } else if (cmp > 0) {
+        } else {
             // more, even level
             if (level % 2 == 0) {
                 rect = new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
@@ -72,8 +77,6 @@ public class KdTree {
                 rect = new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax());
             }
             x.rt = insert(x.rt, rect, p, level + 1);
-        } else {
-            return x;
         }
         x.count = 1 + size(x.lb) + size(x.rt);
         return x;
@@ -85,18 +88,28 @@ public class KdTree {
         if (p == null) {
             throw new IllegalArgumentException();
         }
-        Node x = root;
-        while (x != null) {
-            int cmp = p.compareTo(x.p);
-            if (cmp < 0) {
-                x = x.lb;
-            } else if (cmp > 0) {
-                x = x.rt;
-            } else {
-                return true;
-            }
+        return contains(root, p, 0);
+    }
+
+    private boolean contains(Node x, Point2D p, int level) {
+        if (x == null) {
+            return false;
         }
-        return false;
+        if (p.equals(x.p)) {
+            return true;
+        }
+        int cmp;
+        if (level % 2 == 0) {
+            cmp = Double.compare(p.x(), x.p.x());
+        } else {
+            cmp = Double.compare(p.y(), x.p.y());
+        }
+
+        if (cmp < 0) {
+            return contains(x.lb, p, level + 1);
+        } else {
+            return contains(x.rt, p, level + 1);
+        }
     }
 
     // draw all points to standard draw
@@ -176,6 +189,7 @@ public class KdTree {
     // unit testing of the methods (optional)
 
     public static void main(String[] args) {
+
     }
 
 }

@@ -46,36 +46,32 @@ public class KdTree {
             return new Node(p, rect, 1);
         }
 
-        int cmp = p.compareTo(x.p);
+        int cmp;
+        if (level % 2 == 0) {
+            cmp = Double.compare(p.x(), x.p.x());
+        } else {
+            cmp = Double.compare(p.y(), x.p.y());
+        }
         if (cmp < 0) {
-            if (x.lb != null) {
-                x.lb = insert(x.lb, x.lb.rect, p, level + 1);
-            } else {
-                // less, even level
-                if (level % 2 == 0) {
-                    rect = new RectHV(rect.xmin(), rect.ymin(), x.p.x(), rect.ymax());
-                }
-                // less, odd level
-                else {
-                    rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y());
-                }
-                x.lb = insert(x.lb, rect, p, level + 1);
+            // less, even level
+            if (level % 2 == 0) {
+                rect = new RectHV(rect.xmin(), rect.ymin(), x.p.x(), rect.ymax());
             }
+            // less, odd level
+            else {
+                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y());
+            }
+            x.lb = insert(x.lb, rect, p, level + 1);
         } else if (cmp > 0) {
-            if (x.rt != null) {
-                x.rt = insert(x.rt, x.rt.rect, p, level + 1);
-            } else {
-                // more, even level
-                if (level % 2 == 0) {
-                    rect = new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
-                }
-                // more, odd level
-                else {
-                    rect = new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax());
-                }
-                x.rt = insert(x.rt, rect, p, level + 1);
+            // more, even level
+            if (level % 2 == 0) {
+                rect = new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
             }
-
+            // more, odd level
+            else {
+                rect = new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax());
+            }
+            x.rt = insert(x.rt, rect, p, level + 1);
         } else {
             return x;
         }

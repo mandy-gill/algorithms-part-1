@@ -48,27 +48,36 @@ public class KdTree {
 
         int cmp = p.compareTo(x.p);
         if (cmp < 0) {
-            level = level + 1;
-            // less, even level
-            if (level % 2 == 0) {
-                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax() - p.x(), rect.ymax());
+            if (x.lb != null) {
+                x.lb = insert(x.lb, x.lb.rect, p, level + 1);
+            } else {
+                // less, even level
+                if (level % 2 == 0) {
+                    rect = new RectHV(rect.xmin(), rect.ymin(), x.p.x(), rect.ymax());
+                }
+                // less, odd level
+                else {
+                    rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y());
+                }
+                x.lb = insert(x.lb, rect, p, level + 1);
             }
-            // less, odd level
-            else {
-                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), rect.ymax() - p.y());
-            }
-            x.lb = insert(x.lb, rect, p, level);
         } else if (cmp > 0) {
-            level = level + 1;
-            // more, even level
-            if (level % 2 == 0) {
-                rect = new RectHV(rect.xmin() + p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+            if (x.rt != null) {
+                x.rt = insert(x.rt, x.rt.rect, p, level + 1);
+            } else {
+                // more, even level
+                if (level % 2 == 0) {
+                    rect = new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+                }
+                // more, odd level
+                else {
+                    rect = new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax());
+                }
+                x.rt = insert(x.rt, rect, p, level + 1);
             }
-            // more, odd level
-            else {
-                rect = new RectHV(rect.xmin() + p.x(), rect.ymin() + p.y(), rect.xmax(), rect.ymax());
-            }
-            x.rt = insert(x.rt, rect, p, level);
+
+        } else {
+            return x;
         }
         x.count = 1 + size(x.lb) + size(x.rt);
         return x;

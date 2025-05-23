@@ -41,12 +41,12 @@ public class KdTree {
             root = new Node(p, rootRect, 1);
             return;
         }
-        root = insert(root, rootRect, p, rootLevel);
+        root = insert(root, p, rootLevel, 0, 1, 0, 1);
     }
 
-    private Node insert(Node x, RectHV rect, Point2D p, int level) {
+    private Node insert(Node x, Point2D p, int level, double rxmin, double rxmax, double rymin, double rymax) {
         if (x == null) {
-            return new Node(p, rect, 1);
+            return new Node(p, new RectHV(rxmin, rymin, rxmax, rymax), 1);
         }
 
         if (p.equals(x.p)) {
@@ -54,31 +54,33 @@ public class KdTree {
         }
 
         int cmp;
+        double nodeX = x.p.x();
+        double nodeY = x.p.y();
         if (level % 2 == 0) {
-            cmp = Double.compare(p.x(), x.p.x());
+            cmp = Double.compare(p.x(), nodeX);
         } else {
-            cmp = Double.compare(p.y(), x.p.y());
+            cmp = Double.compare(p.y(), nodeY);
         }
         if (cmp < 0) {
             // less, even level
             if (level % 2 == 0) {
-                rect = new RectHV(rect.xmin(), rect.ymin(), x.p.x(), rect.ymax());
+                rxmax = nodeX;
             }
             // less, odd level
             else {
-                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y());
+                rymax = nodeY;
             }
-            x.lb = insert(x.lb, rect, p, level + 1);
+            x.lb = insert(x.lb, p, level + 1, rxmin, rxmax, rymin, rymax);
         } else {
             // more, even level
             if (level % 2 == 0) {
-                rect = new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+                rxmin = nodeX;
             }
             // more, odd level
             else {
-                rect = new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax());
+                rymin = nodeY;
             }
-            x.rt = insert(x.rt, rect, p, level + 1);
+            x.rt = insert(x.rt, p, level + 1, rxmin, rxmax, rymin, rymax);
         }
         x.count = 1 + size(x.lb) + size(x.rt);
         return x;

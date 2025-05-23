@@ -4,16 +4,15 @@ import edu.princeton.cs.algs4.RectHV;
 
 public class KdTree {
 
-    // private final String even = "EVEN";
-    // private final String odd = "ODD";
-
-    private RectHV rootRect;
+    private final RectHV rootRect;
+    private final int rootLevel;
 
     private Node root;
 
     // construct an empty set of points
     public KdTree() {
         rootRect = new RectHV(0, 0, 1, 1);
+        rootLevel = 0;
     }
 
     // is the set empty?
@@ -35,55 +34,45 @@ public class KdTree {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
-        if (p == null) {
-            throw new IllegalArgumentException();
-        }
         if (root == null) {
-            root = new Node(p, rootRect, 1, 0);
+            root = new Node(p, rootRect, 1);
             return;
         }
-        int cmp = p.compareTo(root.p);
-        if (cmp < 0) {
-            root = insert(root, root.rect, root.level, p, true);
-        } else if (cmp > 0) {
-            root = insert(root, root.rect, root.level, p, false);
-        }
+        root = insert(root, rootRect, p, rootLevel);
     }
 
-    private Node insert(Node x, RectHV rect, int level, Point2D p, boolean small) {
+    private Node insert(Node x, RectHV rect, Point2D p, int level) {
         if (x == null) {
-            int nodeLevel = level + 1;
-            RectHV nodeRect;
-            // even level
-            if (nodeLevel % 2 == 0) {
-                if (small) {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax() - p.x(), rect.ymax());
-                } else {
-                    nodeRect = new RectHV(rect.xmin() + p.x(), rect.ymin(), rect.xmax(), rect.ymax());
-                }
-            }
-            // odd level
-            else {
-                if (small) {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), rect.ymax() - p.y());
-                } else {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin() + p.y(), rect.xmax(), rect.ymax());
-                }
-            }
-            return new Node(p, nodeRect, 1, nodeLevel);
+            return new Node(p, rect, 1);
         }
 
         int cmp = p.compareTo(x.p);
-
         if (cmp < 0) {
-            x.lb = insert(x.lb, x.rect, x.level, p, true);
+            level = level + 1;
+            // less, even level
+            if (level % 2 == 0) {
+                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax() - p.x(), rect.ymax());
+            }
+            // less, odd level
+            else {
+                rect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), rect.ymax() - p.y());
+            }
+            x.lb = insert(x.lb, rect, p, level);
         } else if (cmp > 0) {
-            x.rt = insert(x.rt, x.rect, x.level, p, false);
-        } else {
-            // nothing
+            level = level + 1;
+            // more, even level
+            if (level % 2 == 0) {
+                rect = new RectHV(rect.xmin() + p.x(), rect.ymin(), rect.xmax(), rect.ymax());
+            }
+            // more, odd level
+            else {
+                rect = new RectHV(rect.xmin() + p.x(), rect.ymin() + p.y(), rect.xmax(), rect.ymax());
+            }
+            x.rt = insert(x.rt, rect, p, level);
         }
         x.count = 1 + size(x.lb) + size(x.rt);
         return x;
+
     }
 
     // does the set contain point p?
@@ -91,21 +80,18 @@ public class KdTree {
         if (p == null) {
             throw new IllegalArgumentException();
         }
-        return contains(root, p);
-    }
-
-    private boolean contains(Node x, Point2D p) {
-        if (x == null) {
-            return false;
+        Node x = root;
+        while (x != null) {
+            int cmp = p.compareTo(x.p);
+            if (cmp < 0) {
+                x = x.lb;
+            } else if (cmp > 0) {
+                x = x.rt;
+            } else {
+                return true;
+            }
         }
-        int cmp = p.compareTo(x.p);
-        if (cmp < 0) {
-            return contains(x.lb, p);
-        } else if (cmp > 0) {
-            return contains(x.rt, p);
-        } else {
-            return true;
-        }
+        return false;
     }
 
     // draw all points to standard draw
@@ -174,13 +160,11 @@ public class KdTree {
         private Node lb; // the left/bottom subtree
         private Node rt; // the right/top subtree
         private int count;
-        private int level;
 
-        public Node(Point2D p, RectHV rect, int count, int level) {
+        public Node(Point2D p, RectHV rect, int count) {
             this.p = p;
             this.rect = rect;
             this.count = count;
-            this.level = level;
         }
     }
 

@@ -1,7 +1,6 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.StdIn;
 
 public class KdTree {
 
@@ -35,6 +34,9 @@ public class KdTree {
 
     // add the point to the set (if it is not already in the set)
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
         if (root == null) {
             root = new Node(p, rootRect, 1);
             return;
@@ -137,6 +139,9 @@ public class KdTree {
     }
 
     private void range(Node x, RectHV rect, Queue<Point2D> q) {
+        if (x == null) {
+            return;
+        }
         if (rect.intersects(x.rect)) {
             if (rect.contains(x.p)) {
                 q.enqueue(x.p);
@@ -149,24 +154,44 @@ public class KdTree {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+        if (root == null) {
+            return null;
+        }
         return nearest(root, p, root.p);
     }
 
     private Point2D nearest(Node x, Point2D p, Point2D nPt) {
+        if (x == null) {
+            return nPt;
+        }
         // distance b/w closest point so far and p
-        double dist1 = p.distanceSquaredTo(nPt);
+        double dist1 = nPt.distanceSquaredTo(p);
 
         // distance b/w rect correspoding to node and p
         double dist2 = x.rect.distanceSquaredTo(p);
 
-        if (dist1 > dist2) {
+        if (dist2 < dist1) {
+            double dist3 = x.p.distanceSquaredTo(p);
+            if (dist3 < dist1) {
+                nPt = x.p;
+            }
+            if (x.lb == null) {
+                return nearest(x.rt, p, nPt);
+            }
+            if (x.rt == null) {
+                return nearest(x.lb, p, nPt);
+            }
             double distLB = x.lb.rect.distanceSquaredTo(p);
             double distRT = x.rt.rect.distanceSquaredTo(p);
-            nPt = x.p;
             if (distLB < distRT) {
                 nPt = nearest(x.lb, p, nPt);
+                nPt = nearest(x.rt, p, nPt);
             } else {
                 nPt = nearest(x.rt, p, nPt);
+                nPt = nearest(x.lb, p, nPt);
             }
         }
         return nPt;

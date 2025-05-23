@@ -4,16 +4,15 @@ import edu.princeton.cs.algs4.RectHV;
 
 public class KdTree {
 
-    // private final String even = "EVEN";
-    // private final String odd = "ODD";
-
-    private RectHV rootRect;
+    private final RectHV rootRect;
+    private final int rootLevel;
 
     private Node root;
 
     // construct an empty set of points
     public KdTree() {
         rootRect = new RectHV(0, 0, 1, 1);
+        rootLevel = 0;
     }
 
     // is the set empty?
@@ -39,51 +38,53 @@ public class KdTree {
             throw new IllegalArgumentException();
         }
         if (root == null) {
-            root = new Node(p, rootRect, 1, 0);
+            root = new Node(p, rootRect, 1);
             return;
         }
-        int cmp = p.compareTo(root.p);
-        if (cmp < 0) {
-            root = insert(root, root.rect, root.level, p, true);
-        } else if (cmp > 0) {
-            root = insert(root, root.rect, root.level, p, false);
-        }
+        root = insert(root, p, rootLevel, 0, 1, 0, 1);
     }
 
-    private Node insert(Node x, RectHV rect, int level, Point2D p, boolean small) {
+    private Node insert(Node x, Point2D p, int level, double rxmin, double rxmax, double rymin, double rymax) {
         if (x == null) {
-            int nodeLevel = level + 1;
-            RectHV nodeRect;
-            // even level
-            if (nodeLevel % 2 == 0) {
-                if (small) {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax() - p.x(), rect.ymax());
-                } else {
-                    nodeRect = new RectHV(rect.xmin() + p.x(), rect.ymin(), rect.xmax(), rect.ymax());
-                }
-            }
-            // odd level
-            else {
-                if (small) {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), rect.ymax() - p.y());
-                } else {
-                    nodeRect = new RectHV(rect.xmin(), rect.ymin() + p.y(), rect.xmax(), rect.ymax());
-                }
-            }
-            return new Node(p, nodeRect, 1, nodeLevel);
+            return new Node(p, new RectHV(rxmin, rymin, rxmax, rymax), 1);
         }
 
-        int cmp = p.compareTo(x.p);
+        if (p.equals(x.p)) {
+            return x;
+        }
 
-        if (cmp < 0) {
-            x.lb = insert(x.lb, x.rect, x.level, p, true);
-        } else if (cmp > 0) {
-            x.rt = insert(x.rt, x.rect, x.level, p, false);
+        int cmp;
+        double nodeX = x.p.x();
+        double nodeY = x.p.y();
+        if (level % 2 == 0) {
+            cmp = Double.compare(p.x(), nodeX);
         } else {
-            // nothing
+            cmp = Double.compare(p.y(), nodeY);
+        }
+        if (cmp < 0) {
+            // less, even level
+            if (level % 2 == 0) {
+                rxmax = nodeX;
+            }
+            // less, odd level
+            else {
+                rymax = nodeY;
+            }
+            x.lb = insert(x.lb, p, level + 1, rxmin, rxmax, rymin, rymax);
+        } else {
+            // more, even level
+            if (level % 2 == 0) {
+                rxmin = nodeX;
+            }
+            // more, odd level
+            else {
+                rymin = nodeY;
+            }
+            x.rt = insert(x.rt, p, level + 1, rxmin, rxmax, rymin, rymax);
         }
         x.count = 1 + size(x.lb) + size(x.rt);
         return x;
+
     }
 
     // does the set contain point p?
@@ -91,20 +92,27 @@ public class KdTree {
         if (p == null) {
             throw new IllegalArgumentException();
         }
-        return contains(root, p);
+        return contains(root, p, 0);
     }
 
-    private boolean contains(Node x, Point2D p) {
+    private boolean contains(Node x, Point2D p, int level) {
         if (x == null) {
             return false;
         }
-        int cmp = p.compareTo(x.p);
-        if (cmp < 0) {
-            return contains(x.lb, p);
-        } else if (cmp > 0) {
-            return contains(x.rt, p);
-        } else {
+        if (p.equals(x.p)) {
             return true;
+        }
+        int cmp;
+        if (level % 2 == 0) {
+            cmp = Double.compare(p.x(), x.p.x());
+        } else {
+            cmp = Double.compare(p.y(), x.p.y());
+        }
+
+        if (cmp < 0) {
+            return contains(x.lb, p, level + 1);
+        } else {
+            return contains(x.rt, p, level + 1);
         }
     }
 
@@ -133,6 +141,9 @@ public class KdTree {
     }
 
     private void range(Node x, RectHV rect, Queue<Point2D> q) {
+        if (x == null) {
+            return;
+        }
         if (rect.intersects(x.rect)) {
             if (rect.contains(x.p)) {
                 q.enqueue(x.p);
@@ -145,24 +156,44 @@ public class KdTree {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException();
+        }
+        if (root == null) {
+            return null;
+        }
         return nearest(root, p, root.p);
     }
 
     private Point2D nearest(Node x, Point2D p, Point2D nPt) {
+        if (x == null) {
+            return nPt;
+        }
         // distance b/w closest point so far and p
-        double dist1 = p.distanceSquaredTo(nPt);
+        double dist1 = nPt.distanceSquaredTo(p);
 
         // distance b/w rect correspoding to node and p
         double dist2 = x.rect.distanceSquaredTo(p);
 
-        if (dist1 > dist2) {
+        if (dist2 < dist1) {
+            double dist3 = x.p.distanceSquaredTo(p);
+            if (dist3 < dist1) {
+                nPt = x.p;
+            }
+            if (x.lb == null) {
+                return nearest(x.rt, p, nPt);
+            }
+            if (x.rt == null) {
+                return nearest(x.lb, p, nPt);
+            }
             double distLB = x.lb.rect.distanceSquaredTo(p);
             double distRT = x.rt.rect.distanceSquaredTo(p);
-            nPt = x.p;
             if (distLB < distRT) {
                 nPt = nearest(x.lb, p, nPt);
+                nPt = nearest(x.rt, p, nPt);
             } else {
                 nPt = nearest(x.rt, p, nPt);
+                nPt = nearest(x.lb, p, nPt);
             }
         }
         return nPt;
@@ -174,19 +205,18 @@ public class KdTree {
         private Node lb; // the left/bottom subtree
         private Node rt; // the right/top subtree
         private int count;
-        private int level;
 
-        public Node(Point2D p, RectHV rect, int count, int level) {
+        public Node(Point2D p, RectHV rect, int count) {
             this.p = p;
             this.rect = rect;
             this.count = count;
-            this.level = level;
         }
     }
 
     // unit testing of the methods (optional)
 
     public static void main(String[] args) {
+
     }
 
 }

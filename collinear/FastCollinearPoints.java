@@ -6,11 +6,16 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class FastCollinearPoints {
 
-    private static final double EPSILON = 1e-9;
+    // private static final double EPSILON = 1e-9;
 
     private LineSegment[] lineSegments;
 
-    public FastCollinearPoints(Point[] points) { // finds all line segments containing 4 or more points
+    // finds all line segments containing 4 or more points
+    public FastCollinearPoints(Point[] points) {
+
+        // slopeTo
+        // compare
+        // compareTo
 
         // Throw exception if argument is null
         if (points == null) {
@@ -35,7 +40,7 @@ public class FastCollinearPoints {
             }
         }
 
-        // get a copy of points array
+        // get a copy of argument array
         Point[] otherPoints = new Point[points.length];
         for (int i = 0; i < points.length; i++) {
             otherPoints[i] = points[i];
@@ -96,7 +101,8 @@ public class FastCollinearPoints {
             return true;
         }
         // Handles rounding errors
-        return Math.abs(a - b) < EPSILON;
+        // return Math.abs(a - b) < EPSILON;
+        return Double.compare(a, b) == 0;
     }
 
     private void addLsgToLsgs(Point[] pts, Point p) {
@@ -164,11 +170,11 @@ public class FastCollinearPoints {
         return c.compare(v, w) < 0;
     }
 
-    private static void exch(Point[] a, int i, int j) {
-        Point swap = a[i];
-        a[i] = a[j];
-        a[j] = swap;
-    }
+    // private static void exch(Point[] a, int i, int j) {
+    // Point swap = a[i];
+    // a[i] = a[j];
+    // a[j] = swap;
+    // }
 
     public int numberOfSegments() { // the number of line segments
         return lineSegments.length;

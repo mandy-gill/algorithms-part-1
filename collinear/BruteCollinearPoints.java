@@ -4,7 +4,7 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class BruteCollinearPoints {
 
-    private static final double EPSILON = 1e-9;
+    // private static final double EPSILON = 1e-9;
 
     private LineSegment[] lineSegments;
 
@@ -92,7 +92,8 @@ public class BruteCollinearPoints {
             return true;
         }
         // Handles rounding errors
-        return Math.abs(a - b) < EPSILON;
+        // return Math.abs(a - b) < EPSILON;
+        return Double.compare(a, b) == 0;
     }
 
     private LineSegment[] getLineSegmentsCopy(int capacity) {
